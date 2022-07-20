@@ -1,0 +1,30 @@
+UI menu.c32
+MENU TITLE ### LCOGT Automatic Rebuild ###
+
+# Wait 5 seconds unless the user types something, but always boot after 5 minutes
+TIMEOUT 50
+TOTALTIMEOUT 3000
+
+{% if boot_mode in ('rebuild', 'rebuildalt', 'rescue', ) -%}
+DEFAULT rebuild
+{%- else -%}
+DEFAULT local
+{%- endif %}
+
+LABEL rebuild
+  MENU LABEL Rebuild Proxmox VE {{ pveversion }} {{ arch }} ({{ hostname }})
+  LINUX {{ mirrorbase }}/proxmox/{{ pveversion }}/linux26
+  APPEND initrd={{ mirrorbase }}/proxmox/{{ pveversion }}/initrd.iso.img
+  IPAPPEND 2
+
+LABEL reload
+  MENU LABEL Reload PXE configuration from server
+  CONFIG {{ tftpurl }}
+
+LABEL local
+  MENU LABEL Boot from local drive
+  KERNEL chain.c32 hd0
+
+LABEL memtest
+  MENU LABEL Memtest86+ Memory Tester (v5.01)
+  KERNEL memtest86+-5.01

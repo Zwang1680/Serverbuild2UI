@@ -1,0 +1,13 @@
+$ttl 38400
+
+{{ site.domain }}.	IN	SOA	core1.{{ site.domain }}. bhaworth.lco.global. (
+			{{ site.dns_serialno }}
+			10800
+			3600
+			604800
+			38400
+)
+
+{% for record in dnsrecords -%}
+{{ record[0] }}  IN  {{ record[1] }}  {{ record[2] }}
+{% endfor %}

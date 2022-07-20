@@ -1,0 +1,36 @@
+allow booting;
+allow bootp;
+
+# Instruct all PXE clients to boot using these configuration parameters:
+# tftp server: 172.16.5.1
+# boot file: pxelinux.0
+class "pxeclients" {
+  match if substring(option vendor-class-identifier, 0, 9) = "PXEClient";
+  next-server 172.16.5.1;
+  filename "pxelinux.0";
+}
+
+default-lease-time 86400;
+option domain-name "{{ site.domain }} lco.gtn";
+option domain-search "{{ site.domain }}", "lco.gtn";
+
+subnet {{ sitenetwork.network_address }} netmask {{ sitenetwork.netmask }} {
+	option ntp-servers 172.16.5.50;
+	option time-servers 172.16.5.50;
+	option domain-name-servers {{ ', '.join(site.dnsservers) }};
+	option subnet-mask {{ sitenetwork.netmask }};
+	option routers {{ site.gateway }};
+	authoritative;
+	next-server 172.16.5.1;
+	filename "pxelinux.0";
+{%- if dhcprange %}
+	range {{ dhcprange.start }} {{ dhcprange.end }};
+{%- endif %}
+}
+
+{% for record in dhcprecords %}
+host {{ record.hostname }} {
+	hardware ethernet {{ record.macaddress }};
+	fixed-address {{ record.ipaddress }};
+}
+{% endfor %}

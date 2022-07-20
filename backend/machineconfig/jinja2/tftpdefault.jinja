@@ -1,0 +1,34 @@
+UI menu.c32
+MENU TITLE ### LCOGT Automatic Rebuild ###
+
+# Wait 5 seconds unless the user types something, but always boot after 5 minutes
+TIMEOUT 50
+TOTALTIMEOUT 3000
+
+DEFAULT local
+
+LABEL no_configuration_found_for_computer
+  MENU LABEL !!! THIS IS AN UNCONFIGURED COMPUTER !!!
+  TEXT HELP
+  This computer has not yet been configured. Please use your web browser
+  and visit {{ baseurl }} to configure this computer.
+  MAC Address: {{ mac }}.
+  ENDTEXT
+
+LABEL help_display
+  MENU LABEL !!! CONFIGURE AT {{ baseurl }} !!!
+
+LABEL mac_address_display
+  MENU LABEL !!! MAC ADDRESS {{ mac }} !!!
+
+LABEL reload
+  MENU LABEL Reload PXE configuration from ServerBuild
+  CONFIG {{ tftpurl }}
+
+LABEL local
+  MENU LABEL Boot from local drive
+  KERNEL chain.c32 hd0
+
+LABEL memtest
+  MENU LABEL Memtest86+ Memory Tester (v5.01)
+  KERNEL memtest86+-5.01

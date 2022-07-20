@@ -1,0 +1,52 @@
+UI menu.c32
+MENU TITLE ### LCOGT Automatic Rebuild ###
+
+# Wait 5 seconds unless the user types something, but always boot after 5 minutes
+TIMEOUT 50
+TOTALTIMEOUT 3000
+
+{% if boot_mode in ('rebuild', 'rebuildalt', ) -%}
+DEFAULT rebuild
+{%- elif boot_mode == 'rescue' -%}
+DEFAULT rescue
+{%- else -%}
+DEFAULT local
+{%- endif %}
+
+{#- Build package repository URL based on CentOS version -#}
+{%- macro centos_repo_url() -%}
+{% if osversion >= 8 -%}
+{{ mirrorbase }}/centos/{{ osversion }}/BaseOS/{{ arch }}/os
+{%- else -%}
+{{ mirrorbase }}/centos/{{ osversion }}/os/{{ arch }}
+{%- endif %}
+{%- endmacro %}
+
+{#- Build PXE boot file path based on CentOS version -#}
+{%- macro centos_pxe_path(filename) -%}
+{{ centos_repo_url() }}/images/pxeboot/{{ filename }}
+{%- endmacro %}
+
+LABEL rebuild
+  MENU LABEL Rebuild CentOS {{ osversion }} {{ arch }} ({{ hostname }})
+  LINUX {{ centos_pxe_path('vmlinuz') }}
+  APPEND initrd={{ centos_pxe_path('initrd.img') }} ks={{ ksurl }} {{ network_configuration }} {{ extra }}
+  IPAPPEND 2
+
+LABEL rescue
+  MENU LABEL Rescue CentOS {{ osversion }} {{ arch }} ({{ hostname }})
+  LINUX {{ centos_pxe_path('vmlinuz') }}
+  APPEND initrd={{ centos_pxe_path('initrd.img') }} rescue repo={{ centos_repo_url() }} {{ network_configuration }} {{ extra }}
+  IPAPPEND 2
+
+LABEL reload
+  MENU LABEL Reload PXE configuration from server
+  CONFIG {{ tftpurl }}
+
+LABEL local
+  MENU LABEL Boot from local drive
+  KERNEL chain.c32 hd0
+
+LABEL memtest
+  MENU LABEL Memtest86+ Memory Tester (v5.01)
+  KERNEL memtest86+-5.01
